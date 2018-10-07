@@ -2,7 +2,7 @@
 // @name         PolitoDownloader
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  try to take over the world!
+// @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
 // @grant        GM_openInTab
