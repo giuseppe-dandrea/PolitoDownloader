@@ -34,7 +34,6 @@
 				let pathList = JSON.parse(xhttp.responseText);
 				pathList = pathList.result.filter(o => o.name !== 'ZZZZZZZZZZZZZZZZZZZZLezioni on-line');
 				if (pathList.length === 0) {
-					downloadButtonWrapper.innerHTML = "No files!";
 					N_FILE = -1;
 					return;
 				}
@@ -75,33 +74,46 @@
 		});
 	}
 
-	function downloadZip() {
+	function saveFile(blob, name) {
+		let a = document.createElement("a");
+		document.body.appendChild(a);
+		a.style = "display: none";
+		let url = window.URL.createObjectURL(blob);
+		a.href = url;
+		a.download = name;
+		a.click();
+		window.URL.revokeObjectURL(url);
+		a.parentNode.removeChild(a);
+	}
+
+	function downloadZip(zip, name) {
 		// console.log("Inizio a comprimere!");
 		zip.generateAsync({ type:"blob" }).then(function(content) {
-			let url = window.URL.createObjectURL(content);
-			GM_openInTab(url);
+			saveFile(content, name);
 			downloadButtonWrapper.innerHTML = "Download full ZIP";
 		});
 	}
 
-	function onCompleted(callback) {
-		new Promise((resolve) => setTimeout(resolve, 5000)).then(() => {
+	function onCompleted(callback, n) {
+		setTimeout(function() {
 			if (N_FILE === 0) {
 				downloadButtonWrapper.innerHTML = "Downloading...";
 				callback();
 			} else if (N_FILE === -1) {
+				downloadButtonWrapper.innerHTML = "No files!";
 				return;
-			} else {
+			} else if (n < 30) {
 				onCompleted(callback);
+			} else {
+				downloadButtonWrapper.innerHTML = "Download Failed.";
+				return;
 			}
-		});
+		}, 1000);
 	}
 
 	// Creating download tag
 	let downloadButton = document.createElement('a');
 	let downloadButtonWrapper = document.createElement('button');
-	let title = document.querySelector('body > div:nth-child(9) > div > div > h2 > strong');
-	downloadButton.setAttribute('download', title.innerHTML + '.zip');
 	downloadButtonWrapper.innerHTML = "Download full ZIP";
 	downloadButtonWrapper.setAttribute('id', "downloadZipButton");
 	downloadButtonWrapper.setAttribute('class', 'btn btn-primary');
@@ -114,6 +126,7 @@
 
 	document.getElementById('downloadZipButton').onclick = function() {
 		listPath('/', 0, listPathHandler, zip);
-		onCompleted(downloadZip);
+		let title = document.querySelector('body > div:nth-child(9) > div > div > h2 > strong');
+		onCompleted(function() { downloadZip(zip, title.innerHTML); }, 0);
 	}
 })();
