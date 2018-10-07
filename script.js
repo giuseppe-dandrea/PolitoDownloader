@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
@@ -57,7 +57,7 @@
 			} else if (o.type == "file" && (downloadAll || (DOWNLOADED_FILES[o.code] ? o.date > DOWNLOADED_FILES[o.code] : true))) {
 				N_FILE++;
 				// console.log('Added ' + o.name);
-				DOWNLOADED_FILES[o.code] = true;
+				DOWNLOADED_FILES[o.code] = o.date;
 				let params = '?action=download&path=' + encodeURIComponent(parentPath + o.name) + '&code=' + o.code;
 				let xhttp = new XMLHttpRequest();
 				xhttp.open('POST', URL + params);
