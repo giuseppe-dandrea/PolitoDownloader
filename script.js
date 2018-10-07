@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
@@ -54,7 +54,7 @@
 				// console.log("Created dir " + o.name);
 				let newFolder = parentFolder.folder(o.name);
 				listPath(parentPath + o.name + '/', o.code, listPathHandler, newFolder, downloadAll);
-			} else if (o.type == "file" && (downloadAll || !DOWNLOADED_FILES[o.code])) {
+			} else if (o.type == "file" && (downloadAll || (DOWNLOADED_FILES[o.code] ? o.date > DOWNLOADED_FILES[o.code] : true))) {
 				N_FILE++;
 				// console.log('Added ' + o.name);
 				DOWNLOADED_FILES[o.code] = true;
@@ -95,16 +95,13 @@
 		});
 	}
 
-	function onCompleted(callback, n) {
+	function onCompleted(callback) {
 		setTimeout(function() {
 			if (N_FILE === 0) {
 				activeDownloadButton.innerHTML = "Downloading...";
 				callback();
-			} else if (n < 30) {
-				onCompleted(callback, n + 1);
 			} else {
-				activeDownloadButton.innerHTML = "Download Failed.";
-				return;
+				onCompleted(callback);
 			}
 		}, 1000);
 	}
@@ -156,7 +153,7 @@
 			} else {
 				activeDownloadButton.innerHTML = "No files!";
 			}
-		}, 0);
+		});
 	}
 
 	// download new listener
@@ -170,7 +167,7 @@
 				downloadZip(zip, title.innerHTML);
 			} else {
 				activeDownloadButton.innerHTML = "No new files!";
-			}
-		}, 0);
+			} 
+		});
 	}
 })();
