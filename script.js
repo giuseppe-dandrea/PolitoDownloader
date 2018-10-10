@@ -4,7 +4,7 @@
 // @version      0.5
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
-// @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main?t=3
+// @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
@@ -134,12 +134,18 @@
 		display: none;`
 	downloadNewButton.append(badge);
 
+	// page title
+	let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong").innerHTML;
+	let code = title.match(/\w+/)[0];
+
 	let lastUpdate = 0;
+	let GMlastUpdate = GM_getValue("lastUpdate", {});
+
 	let interval = setInterval(function() {
 		let span = document.querySelector("#filemanagerNavbar > div > div.navbar-header > div > span");
 		if (span) {
 			lastUpdate = Date.parse(span.innerText);
-			if (GM_getValue("lastUpdate", 0) < lastUpdate) {
+			if (!GMlastUpdate[code] || GMlastUpdate[code] < lastUpdate) {
 				badge.style.display = "block";
 			}
 			clearInterval(interval);
@@ -172,13 +178,13 @@
 	document.getElementById("downloadAllButton").onclick = function() {
 		initGlobals(downloadAllButton);
 		listPath("/", 0, listPathHandler, zip, true);
-		let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong");
 		onCompleted(function() {
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
-				downloadZip(zip, title.innerHTML);
+				downloadZip(zip, title);
 				badge.style.display = "none";
-				GM_setValue("lastUpdate", lastUpdate);
+				GMlastUpdate[code] = lastUpdate;
+				GM_setValue("lastUpdate", GMlastUpdate);
 			} else {
 				activeDownloadButton.innerHTML = "No files!";
 			}
@@ -189,13 +195,13 @@
 	document.getElementById("downloadNewButton").onclick = function() {
 		initGlobals(downloadNewButton);
 		listPath("/", 0, listPathHandler, zip, false);
-		let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong");
 		onCompleted(function() {
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
-				downloadZip(zip, title.innerHTML);
+				downloadZip(zip, title);
 				badge.style.display = "none";
-				GM_setValue("lastUpdate", lastUpdate);
+				GMlastUpdate[code] = lastUpdate;
+				GM_setValue("lastUpdate", GMlastUpdate);
 			} else {
 				activeDownloadButton.innerHTML = "No new files!";
 			} 
