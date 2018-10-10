@@ -135,10 +135,14 @@
 	downloadNewButton.append(badge);
 
 	let lastUpdate = 0;
-	setTimeout(function() {
-		lastUpdate = Date.parse(document.querySelector("#filemanagerNavbar > div > div.navbar-header > div > span").innerText);
-		if (GM_getValue("lastUpdate", 0) < lastUpdate) {
-			badge.style.display = "block";
+	let interval = setInterval(function() {
+		let span = document.querySelector("#filemanagerNavbar > div > div.navbar-header > div > span");
+		if (span) {
+			lastUpdate = Date.parse(span.innerText);
+			if (GM_getValue("lastUpdate", 0) < lastUpdate) {
+				badge.style.display = "block";
+			}
+			clearInterval(interval);
 		}
 	}, 500);
 
