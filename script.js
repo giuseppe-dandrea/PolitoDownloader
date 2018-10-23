@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
@@ -144,7 +144,18 @@
 	let interval = setInterval(function() {
 		let span = document.querySelector("#filemanagerNavbar > div > div.navbar-header > div > span");
 		if (span) {
-			lastUpdate = Date.parse(span.innerText);
+			let dateArray = span.innerText.match(/\d+/g);
+			let date = new Date();
+			date.setYear(dateArray[2]);
+			date.setMonth(dateArray[1]);
+			date.setDate(dateArray[0]);
+			date.setHours(dateArray[3]);
+			date.setMinutes(dateArray[4]);
+			date.setSeconds(dateArray[5]);
+			date.setMilliseconds(0);
+			lastUpdate = +date;
+			console.log(lastUpdate);
+			console.log(GMlastUpdate);
 			if (!GMlastUpdate[code] || GMlastUpdate[code] < lastUpdate) {
 				badge.style.display = "block";
 			}
@@ -183,11 +194,11 @@
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
 				badge.style.display = "none";
-				GMlastUpdate[code] = lastUpdate;
-				GM_setValue("lastUpdate", GMlastUpdate);
 			} else {
 				activeDownloadButton.innerHTML = "No files!";
 			}
+			GMlastUpdate[code] = lastUpdate;
+			GM_setValue("lastUpdate", GMlastUpdate);
 		});
 	}
 
@@ -200,11 +211,11 @@
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
 				badge.style.display = "none";
-				GMlastUpdate[code] = lastUpdate;
-				GM_setValue("lastUpdate", GMlastUpdate);
 			} else {
 				activeDownloadButton.innerHTML = "No new files!";
-			} 
+			}
+			GMlastUpdate[code] = lastUpdate;
+			GM_setValue("lastUpdate", GMlastUpdate);
 		});
 	}
 })();
