@@ -193,10 +193,10 @@
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
-				badge.style.display = "none";
 			} else {
 				activeDownloadButton.innerHTML = "No files!";
 			}
+			badge.style.display = "none";
 			GMlastUpdate[code] = lastUpdate;
 			GM_setValue("lastUpdate", GMlastUpdate);
 		});
@@ -210,10 +210,10 @@
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
-				badge.style.display = "none";
 			} else {
 				activeDownloadButton.innerHTML = "No new files!";
 			}
+			badge.style.display = "none";
 			GMlastUpdate[code] = lastUpdate;
 			GM_setValue("lastUpdate", GMlastUpdate);
 		});
