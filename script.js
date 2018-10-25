@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    http://tampermonkey.net/
-// @version      0.8
+// @version      0.9
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
@@ -34,6 +34,10 @@
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				let pathList = JSON.parse(xhttp.responseText);
+                if (path === "/" && pathList.result.length === 0) {
+                    activeDownloadButton.innerHTML = "No files!";
+                    return;
+                }
 				pathList = pathList.result.filter(o => o.name !== "ZZZZZZZZZZZZZZZZZZZZLezioni on-line");
 				if (pathList.length === 0) {
 					return;
@@ -154,8 +158,8 @@
 			date.setSeconds(dateArray[5]);
 			date.setMilliseconds(0);
 			lastUpdate = +date;
-			console.log(lastUpdate);
-			console.log(GMlastUpdate);
+			// console.log(lastUpdate);
+			// console.log(GMlastUpdate);
 			if (!GMlastUpdate[code] || GMlastUpdate[code] < lastUpdate) {
 				badge.style.display = "block";
 			}
