@@ -1,12 +1,16 @@
 // ==UserScript==
 // @name         PolitoDownloader
-// @namespace    http://tampermonkey.net/
-// @version      0.9.1
+// @namespace    https://github.com/giuseppe-dandrea
+// @version      0.10
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
+// @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
+// @downloadURL  https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
+// @supportURL   https://github.com/giuseppe-dandrea/PolitoDownloader/issues
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
 // @require      https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // ==/UserScript==
 
@@ -14,7 +18,6 @@
 	"use strict";
 
 	const URL = "https://didattica.polito.it/pls/portal30/sviluppo.filemgr.handler";
-	const COOKIE = document.cookie;
 
 	// List the content of a directory
 	// callback(pathList, parentPath, parentZipFolder, downloadAll)
@@ -34,10 +37,6 @@
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				let pathList = JSON.parse(xhttp.responseText);
-                if (path === "/" && pathList.result.length === 0) {
-                    activeDownloadButton.innerHTML = "No files!";
-                    return;
-                }
 				pathList = pathList.result.filter(o => o.name !== "ZZZZZZZZZZZZZZZZZZZZLezioni on-line");
 				if (pathList.length === 0) {
 					return;
@@ -104,9 +103,7 @@
 			if (N_FILE === 0) {
 				activeDownloadButton.innerHTML = "Downloading...";
 				callback();
-			} else if (NO_FILE) {
-                return;
-            } else {
+			} else {
 				onCompleted(callback);
 			}
 		}, 1000);
@@ -143,31 +140,26 @@
 	// page title
 	let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong").innerHTML;
 	let code = title.match(/\w+/)[0];
+	let TOTAL_FILES = 0;
 
 	let lastUpdate = 0;
 	let GMlastUpdate = GM_getValue("lastUpdate", {});
 
-	let interval = setInterval(function() {
-		let span = document.querySelector("#filemanagerNavbar > div > div.navbar-header > div > span");
-		if (span) {
-			let dateArray = span.innerText.match(/\d+/g);
-			let date = new Date();
-			date.setYear(dateArray[2]);
-			date.setMonth(dateArray[1]);
-			date.setDate(dateArray[0]);
-			date.setHours(dateArray[3]);
-			date.setMinutes(dateArray[4]);
-			date.setSeconds(dateArray[5]);
-			date.setMilliseconds(0);
-			lastUpdate = +date;
-			// console.log(lastUpdate);
-			// console.log(GMlastUpdate);
-			if (!GMlastUpdate[code] || GMlastUpdate[code] < lastUpdate) {
-				badge.style.display = "block";
+	let rootCode = document.documentElement.innerHTML.match(/rootCode: "(\d+)/)[1];
+	if (rootCode) {
+		GM_xmlhttpRequest({
+			method: "POST",
+			url:    "https://didattica.polito.it/pls/portal30/sviluppo.filemgr.get_process_amount?items=" + rootCode,
+			onload: function(resp) {
+				let result = JSON.parse(resp.response).result;
+				TOTAL_FILES = result.files;
+				lastUpdate = Date.parse(result.lastUpload);
+				if (!GMlastUpdate[code] || GMlastUpdate[code] < lastUpdate) {
+					badge.style.display = "block";
+				}
 			}
-			clearInterval(interval);
-		}
-	}, 500);
+		});
+	}
 
 	// center tag
 	let centerTag = document.createElement("center");
@@ -181,7 +173,6 @@
 	let DOWNLOADED_FILES;
 	let activeDownloadButton;
 	let activeButtonText;
-    let NO_FILE = false;
 
 	function initGlobals(button) {
 		zip = new JSZip();
@@ -192,16 +183,19 @@
 		activeButtonText = button.innerHTML;
 	}
 
-	// download all listener
-	document.getElementById("downloadAllButton").onclick = function() {
-		initGlobals(downloadAllButton);
-		listPath("/", 0, listPathHandler, zip, true);
+	function onButtonClick(button, downloadAll, failText) {
+		initGlobals(button);
+		if (TOTAL_FILES == 0) {
+			activeDownloadButton.innerHTML = "No files!";
+			return
+		}
+		listPath("/", 0, listPathHandler, zip, downloadAll);
 		onCompleted(function() {
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
 			} else {
-				activeDownloadButton.innerHTML = "No files!";
+				activeDownloadButton.innerHTML = failText;
 			}
 			badge.style.display = "none";
 			GMlastUpdate[code] = lastUpdate;
@@ -209,20 +203,13 @@
 		});
 	}
 
+	// download all listener
+	document.getElementById("downloadAllButton").onclick = function() {
+		onButtonClick(downloadAllButton, true, "No files!");
+	}
+
 	// download new listener
 	document.getElementById("downloadNewButton").onclick = function() {
-		initGlobals(downloadNewButton);
-		listPath("/", 0, listPathHandler, zip, false);
-		onCompleted(function() {
-			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
-			if (N_DOWNLOADED > 0) {
-				downloadZip(zip, title);
-			} else {
-				activeDownloadButton.innerHTML = "No new files!";
-			}
-			badge.style.display = "none";
-			GMlastUpdate[code] = lastUpdate;
-			GM_setValue("lastUpdate", GMlastUpdate);
-		});
+		onButtonClick(downloadNewButton, false, "No new files!");
 	}
 })();
