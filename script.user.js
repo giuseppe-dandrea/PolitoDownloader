@@ -1,9 +1,12 @@
 // ==UserScript==
 // @name         PolitoDownloader
-// @namespace    http://tampermonkey.net/
-// @version      0.9.1
+// @namespace    https://github.com/giuseppe-dandrea
+// @version      0.10
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
+// @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
+// @downloadURL  https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
+// @supportURL   https://github.com/giuseppe-dandrea/PolitoDownloader/issues
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
 // @grant        GM_setValue
 // @grant        GM_getValue
