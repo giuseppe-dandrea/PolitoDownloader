@@ -34,10 +34,10 @@
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				let pathList = JSON.parse(xhttp.responseText);
-                if (path === "/" && pathList.result.length === 0) {
-                    activeDownloadButton.innerHTML = "No files!";
-                    return;
-                }
+				if (path === "/" && pathList.result.length === 0) {
+					activeDownloadButton.innerHTML = "No files!";
+					return;
+				}
 				pathList = pathList.result.filter(o => o.name !== "ZZZZZZZZZZZZZZZZZZZZLezioni on-line");
 				if (pathList.length === 0) {
 					return;
@@ -105,8 +105,8 @@
 				activeDownloadButton.innerHTML = "Downloading...";
 				callback();
 			} else if (NO_FILE) {
-                return;
-            } else {
+				return;
+			} else {
 				onCompleted(callback);
 			}
 		}, 1000);
@@ -181,7 +181,7 @@
 	let DOWNLOADED_FILES;
 	let activeDownloadButton;
 	let activeButtonText;
-    let NO_FILE = false;
+	let NO_FILE = false;
 
 	function initGlobals(button) {
 		zip = new JSZip();
