@@ -71,10 +71,16 @@
 						parentFolder.file(o.name, xhttp.response, { binary: true });
 						// console.log("1 file added!");
 						N_DOWNLOADED++;
+						updateProgressBar(( (N_DOWNLOADED + N_PREVIOUS_DOWNLOADED) / TOTAL_FILES ) * 100);
 						N_FILE--;
 					}
 				}
+			} else {
+				N_PREVIOUS_DOWNLOADED++;
+				updateProgressBar(( (N_DOWNLOADED + N_PREVIOUS_DOWNLOADED) / TOTAL_FILES ) * 100);
+
 			}
+
 		});
 	}
 
@@ -113,6 +119,7 @@
 		zip = new JSZip();
 		N_FILE = 0;
 		N_DOWNLOADED = 0;
+		N_PREVIOUS_DOWNLOADED = 0;
 		DOWNLOADED_FILES = GM_getValue("downloadedFiles", {});
 		activeDownloadButton = button;
 		activeButtonText = button.innerHTML;
@@ -120,6 +127,7 @@
 
 	function onButtonClick(button, downloadAll, failText) {
 		initGlobals(button);
+		progressBar.parentNode.style.display = "block"
 		if (TOTAL_FILES == 0) {
 			activeDownloadButton.innerHTML = "No files!";
 			return
@@ -133,9 +141,17 @@
 				activeDownloadButton.innerHTML = failText;
 			}
 			badge.style.display = "none";
+			progressBar.parentNode.style.display = "none"
+			updateProgressBar(0);
 			GMlastUpdate[code] = lastUpdate;
 			GM_setValue("lastUpdate", GMlastUpdate);
 		});
+	}
+
+	function updateProgressBar(percent) {
+		percent = Math.round(percent);
+		progressBar.style.width = percent + "%";
+		progressBar.setAttribute("aria-valuenow", percent);
 	}
 
 	// download all
@@ -165,6 +181,18 @@
 		margin-bottom: -10px;
 		display: none;`
 	downloadNewButton.append(badge);
+
+	// progress bar
+	let progressBarStr = 	'<div class="progress">\
+							<div class="progress-bar" id="progressbar" role="progressbar"\
+							  aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">\
+							</div>\
+						</div>'
+	let progressBar = document.createElement("div");
+	progressBar.innerHTML = progressBarStr;
+	progressBar = progressBar.firstChild.children[0];
+	progressBar.parentNode.style.display = "none";
+	progressBar.parentNode.style.margin = "10px";
 
 	// page title
 	let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong").innerHTML;
@@ -196,11 +224,14 @@
 	centerTag.appendChild(downloadAllButton);
 	centerTag.appendChild(downloadNewButton);
 	document.querySelector("#portlet_corso_container > div > div > div.row.text-left > div > div:nth-child(2)").prepend(centerTag);
+	centerTag.parentNode.insertBefore(progressBar.parentNode, centerTag.nextSibling)
+
 	
 	// global vars
 	let zip;
 	let N_FILE;
 	let N_DOWNLOADED;
+	let N_PREVIOUS_DOWNLOADED;
 	let DOWNLOADED_FILES;
 	let activeDownloadButton;
 	let activeButtonText;
