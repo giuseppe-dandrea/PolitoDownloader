@@ -109,6 +109,35 @@
 		}, 1000);
 	}
 
+	function initGlobals(button) {
+		zip = new JSZip();
+		N_FILE = 0;
+		N_DOWNLOADED = 0;
+		DOWNLOADED_FILES = GM_getValue("downloadedFiles", {});
+		activeDownloadButton = button;
+		activeButtonText = button.innerHTML;
+	}
+
+	function onButtonClick(button, downloadAll, failText) {
+		initGlobals(button);
+		if (TOTAL_FILES == 0) {
+			activeDownloadButton.innerHTML = "No files!";
+			return
+		}
+		listPath("/", 0, listPathHandler, zip, downloadAll);
+		onCompleted(function() {
+			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
+			if (N_DOWNLOADED > 0) {
+				downloadZip(zip, title);
+			} else {
+				activeDownloadButton.innerHTML = failText;
+			}
+			badge.style.display = "none";
+			GMlastUpdate[code] = lastUpdate;
+			GM_setValue("lastUpdate", GMlastUpdate);
+		});
+	}
+
 	// download all
 	let downloadAllButton = document.createElement("button");
 	downloadAllButton.innerHTML = "Download All Files";
@@ -145,6 +174,7 @@
 	let lastUpdate = 0;
 	let GMlastUpdate = GM_getValue("lastUpdate", {});
 
+	// Code of the root directory, used to obtain TOTAL_FILES and lastUpdate
 	let rootCode = document.documentElement.innerHTML.match(/rootCode: "(\d+)/)[1];
 	if (rootCode) {
 		GM_xmlhttpRequest({
@@ -166,6 +196,7 @@
 	centerTag.appendChild(downloadAllButton);
 	centerTag.appendChild(downloadNewButton);
 	document.querySelector("#portlet_corso_container > div > div > div.row.text-left > div > div:nth-child(2)").prepend(centerTag);
+	
 	// global vars
 	let zip;
 	let N_FILE;
@@ -173,35 +204,6 @@
 	let DOWNLOADED_FILES;
 	let activeDownloadButton;
 	let activeButtonText;
-
-	function initGlobals(button) {
-		zip = new JSZip();
-		N_FILE = 0;
-		N_DOWNLOADED = 0;
-		DOWNLOADED_FILES = GM_getValue("downloadedFiles", {});
-		activeDownloadButton = button;
-		activeButtonText = button.innerHTML;
-	}
-
-	function onButtonClick(button, downloadAll, failText) {
-		initGlobals(button);
-		if (TOTAL_FILES == 0) {
-			activeDownloadButton.innerHTML = "No files!";
-			return
-		}
-		listPath("/", 0, listPathHandler, zip, downloadAll);
-		onCompleted(function() {
-			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
-			if (N_DOWNLOADED > 0) {
-				downloadZip(zip, title);
-			} else {
-				activeDownloadButton.innerHTML = failText;
-			}
-			badge.style.display = "none";
-			GMlastUpdate[code] = lastUpdate;
-			GM_setValue("lastUpdate", GMlastUpdate);
-		});
-	}
 
 	// download all listener
 	document.getElementById("downloadAllButton").onclick = function() {
