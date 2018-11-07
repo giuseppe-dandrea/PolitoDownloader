@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    https://github.com/giuseppe-dandrea
-// @version      0.11
+// @version      0.12
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
