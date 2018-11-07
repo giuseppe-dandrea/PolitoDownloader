@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    https://github.com/giuseppe-dandrea
-// @version      0.11
+// @version      0.12
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
@@ -30,7 +30,7 @@
 		let params = "?action=list&path=" + encodeURIComponent(path) + "&code=" + code;
 		let xhttp = new XMLHttpRequest();
 
-		activeDownloadButton.innerHTML = "Retrieving files...";
+		activeDownloadButton.innerText = "Retrieving files...";
 
 		xhttp.open("POST", URL + params);
 		xhttp.send();
@@ -100,14 +100,14 @@
 		// console.log("Inizio a comprimere!");
 		zip.generateAsync({ type:"blob" }).then(function(content) {
 			saveFile(content, name);
-			activeDownloadButton.innerHTML = activeButtonText;
+			activeDownloadButton.innerText = activeButtonText;
 		});
 	}
 
 	function onCompleted(callback) {
 		setTimeout(function() {
 			if (N_FILE === 0) {
-				activeDownloadButton.innerHTML = "Downloading...";
+				activeDownloadButton.innerText = "Downloading...";
 				callback();
 			} else {
 				onCompleted(callback);
@@ -122,14 +122,14 @@
 		N_PREVIOUS_DOWNLOADED = 0;
 		DOWNLOADED_FILES = GM_getValue("downloadedFiles", {});
 		activeDownloadButton = button;
-		activeButtonText = button.innerHTML;
+		activeButtonText = button.innerText;
 	}
 
 	function onButtonClick(button, downloadAll, failText) {
 		initGlobals(button);
 		progressBar.parentNode.style.display = "block"
 		if (TOTAL_FILES == 0) {
-			activeDownloadButton.innerHTML = "No files!";
+			activeDownloadButton.innerText = "No files!";
 			return
 		}
 		listPath("/", 0, listPathHandler, zip, downloadAll);
@@ -138,7 +138,7 @@
 			if (N_DOWNLOADED > 0) {
 				downloadZip(zip, title);
 			} else {
-				activeDownloadButton.innerHTML = failText;
+				activeDownloadButton.innerText = failText;
 			}
 			badge.style.display = "none";
 			progressBar.parentNode.style.display = "none"
@@ -156,13 +156,13 @@
 
 	// download all
 	let downloadAllButton = document.createElement("button");
-	downloadAllButton.innerHTML = "Download All Files";
+	downloadAllButton.innerText = "Download All Files";
 	downloadAllButton.setAttribute("id", "downloadAllButton");
 	downloadAllButton.setAttribute("class", "btn btn-primary");
 
 	// download new
 	let downloadNewButton = document.createElement("button");
-	downloadNewButton.innerHTML = "Download New Files";
+	downloadNewButton.innerText = "Download New Files";
 	downloadNewButton.setAttribute("id", "downloadNewButton");
 	downloadNewButton.setAttribute("class", "btn btn-primary");
 	downloadNewButton.style["margin-left"] = "5px";
@@ -195,7 +195,7 @@
 	progressBar.parentNode.style.margin = "10px";
 
 	// page title
-	let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong").innerHTML;
+	let title = document.querySelector("body > div:nth-child(9) > div > div > h2 > strong").innerText;
 	let code = title.match(/\w+/)[0];
 	let TOTAL_FILES = 0;
 
