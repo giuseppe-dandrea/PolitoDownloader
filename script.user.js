@@ -1,11 +1,9 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    https://github.com/giuseppe-dandrea
-// @version      0.12
+// @version      0.13
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
-// @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
-// @downloadURL  https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
 // @supportURL   https://github.com/giuseppe-dandrea/PolitoDownloader/issues
 // @match        https://didattica.polito.it/pls/portal30/sviluppo.pagina_corso.main*
 // @grant        GM_setValue
@@ -38,10 +36,10 @@
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				let pathList = JSON.parse(xhttp.responseText);
 				pathList = pathList.result.filter(o => o.name !== "ZZZZZZZZZZZZZZZZZZZZLezioni on-line");
+				N_FILE--;
 				if (pathList.length === 0) {
 					return;
 				}
-				N_FILE--;
 				if (callback) callback(pathList, path, parentZipFolder, downloadAll);
 			}
 		}
@@ -97,7 +95,7 @@
 	}
 
 	function downloadZip(zip, name) {
-		// console.log("Inizio a comprimere!");
+		console.log("Inizio a comprimere!");
 		zip.generateAsync({ type:"blob" }).then(function(content) {
 			saveFile(content, name);
 			activeDownloadButton.innerText = activeButtonText;
@@ -106,6 +104,7 @@
 
 	function onCompleted(callback) {
 		setTimeout(function() {
+            console.log(N_FILE);
 			if (N_FILE === 0) {
 				activeDownloadButton.innerText = "Downloading...";
 				callback();
@@ -133,6 +132,7 @@
 			return
 		}
 		listPath("/", 0, listPathHandler, zip, downloadAll);
+        console.log("File download completed\nStarting onCompleted");
 		onCompleted(function() {
 			GM_setValue("downloadedFiles", DOWNLOADED_FILES);
 			if (N_DOWNLOADED > 0) {
