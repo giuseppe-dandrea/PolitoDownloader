@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PolitoDownloader
 // @namespace    https://github.com/giuseppe-dandrea
-// @version      0.14
+// @version      0.15
 // @description  Download all your Polito material in one click
 // @author       giuseppe-dandrea
 // @updateURL    https://raw.githubusercontent.com/giuseppe-dandrea/PolitoDownloader/master/script.user.js
@@ -37,7 +37,7 @@
 		xhttp.onreadystatechange = function() {
 			if (xhttp.readyState == 4 && xhttp.status == 200) {
 				let pathList = JSON.parse(xhttp.responseText);
-				pathList = pathList.result.filter(o => o.name !== "ZZZZZZZZZZZZZZZZZZZZLezioni on-line");
+				pathList = pathList.result.filter(o => !o.name.includes("ZZZZZZZZZZZZZZZZZZZZLezioni on-line"));
 				N_FILE--;
 				if (pathList.length === 0) {
 					return;
